@@ -1,13 +1,13 @@
 class Codec:
     H = [
-        [1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-        [1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0],
-        [1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0],
-        [1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0],
-        [1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0],
-        [1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0],
-        [1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0],
-        [0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1]
+        [0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        [1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0],
+        [1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+        [0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
+        [1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+        [0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0],
+        [1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+        [0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1]
     ]
 
     H_ROWS = len(H)
@@ -34,9 +34,30 @@ class Codec:
     def decode(message):
         if len(message) % Codec.H_COLS != 0:
             raise Exception('Failed to decode the message: Invalid length')
+
+        message = message.copy()
         errors = Codec.get_errors(message)
-        decoded = [(message[i] + errors[i]) % 2 for i in range(0, Codec.H_ROWS)]
-        return decoded
+
+        # Correct single error
+        for col in range(0, Codec.H_COLS):
+            for row in range(0, Codec.H_ROWS):
+                if errors[row] != Codec.H[row][col]:
+                    break
+            else:
+                message[col] ^= 1
+
+        # Correct double error
+        for i in range(0, Codec.H_COLS):
+            for j in range(1, Codec.H_COLS):
+                for row in range(0, Codec.H_ROWS):
+                    if (Codec.H[row][i] ^ Codec.H[row][j]) != errors[row]:
+                        break
+                else:
+                    message[i] ^= 1
+                    message[j] ^= 1
+                    return message[0:8]
+
+        return message[0:8]
 
     @staticmethod
     def add_padding(message):
@@ -56,18 +77,9 @@ class Codec:
         if len(message) % Codec.H_COLS != 0:
             raise Exception('Failed to get errors: Invalid length')
         errors = []
-        found = False
         for row in range(0, Codec.H_ROWS):
             e = 0
             for col in range(0, Codec.H_COLS):
                 e += Codec.H[row][col] * message[col]
-                e %= 2
-            if e == 1:
-                found = True
-            errors.append(e)
-
-        if found:
-            errors = [b ^ 1 for b in errors]
-
-        errors.reverse()
+            errors.append(e % 2)
         return errors

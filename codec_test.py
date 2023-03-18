@@ -56,7 +56,6 @@ class CodecTest(unittest.TestCase):
             self.assertTrue(encoded not in encoded_list)
             encoded_list += [encoded]
 
-    @unittest.skip
     def test_encode_if_every_byte_combination_provided_then_the_minimum_hamming_distance_is_five(self):
         encoded_list = list()
         for c in product([0, 1], repeat=8):
@@ -98,13 +97,11 @@ class CodecTest(unittest.TestCase):
         encoded = Codec.encode([0, 0, 1, 1, 0, 0, 0, 1])
         self.assertEqual([0 for _ in range(0, Codec.H_ROWS)], Codec.get_errors(encoded))
 
-    def test_get_errors_if_single_error_then_returns_list_with_one_at_the_position_at_which_error_occurred(self):
+    def test_get_errors_if_single_error_then_returns_a_list_of_not_only_zeros(self):
         encoded = Codec.encode([randint(0, 1) for _ in range(0, 8)])
         pos = randint(0, Codec.H_ROWS - 1)
         encoded[pos] ^= 1
-        expected = [0 for _ in range(0, Codec.H_ROWS)]
-        expected[pos] = 1
-        self.assertEqual(expected, Codec.get_errors(encoded))
+        self.assertTrue(1 in Codec.get_errors(encoded))
 
     def test_decode_if_single_error_then_it_is_corrected(self):
         for message in product([0, 1], repeat=8):
@@ -115,7 +112,6 @@ class CodecTest(unittest.TestCase):
                 decoded = Codec.decode(damaged)
                 self.assertEqual([*message], decoded)
 
-    @unittest.skip
     def test_decode_if_two_errors_then_they_are_corrected(self):
         for message in product([0, 1], repeat=8):
             encoded = Codec.encode(message)
