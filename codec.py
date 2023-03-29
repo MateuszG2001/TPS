@@ -35,8 +35,20 @@ class Codec:
         if len(message) % Codec.H_COLS != 0:
             raise Exception('Failed to decode the message: Invalid length')
 
-        message = message.copy()
-        errors = Codec.get_errors(message)
+        blocks = Codec.split_into_double_blocks(message)
+        decoded = []
+        for i in range(0, len(blocks)):
+            decoded.extend(Codec.decode_word(blocks[i]))
+
+        return decoded
+
+    @staticmethod
+    def decode_word(word):
+        if len(word) != Codec.H_COLS:
+            raise Exception('Failed to decode the word: Invalid length')
+
+        word = word.copy()
+        errors = Codec.get_errors(word)
 
         # Correct single error
         for col in range(0, Codec.H_COLS):
@@ -44,7 +56,7 @@ class Codec:
                 if errors[row] != Codec.H[row][col]:
                     break
             else:
-                message[col] ^= 1
+                word[col] ^= 1
 
         # Correct double error
         for i in range(0, Codec.H_COLS):
@@ -53,11 +65,11 @@ class Codec:
                     if (Codec.H[row][i] ^ Codec.H[row][j]) != errors[row]:
                         break
                 else:
-                    message[i] ^= 1
-                    message[j] ^= 1
-                    return message[0:8]
+                    word[i] ^= 1
+                    word[j] ^= 1
+                    return word[0:8]
 
-        return message[0:8]
+        return word[0:8]
 
     @staticmethod
     def add_padding(message):
@@ -71,6 +83,12 @@ class Codec:
         if len(message) % 8 != 0:
             raise Exception('Failed to split the message into blocks: Invalid length')
         return [message[i:i+8] for i in range(0, len(message), 8)]
+
+    @staticmethod
+    def split_into_double_blocks(message):
+        if len(message) % 16 != 0:
+            raise Exception('Failed to split the message into double blocks: Invalid length')
+        return [message[i:i+16] for i in range(0, len(message), 16)]
 
     @staticmethod
     def get_errors(message):

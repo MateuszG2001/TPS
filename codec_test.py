@@ -73,8 +73,8 @@ class CodecTest(unittest.TestCase):
         self.assertEqual(8, len(Codec.decode(message)))
 
     def test_decode_if_message_length_is_multiple_of_h_cols_then_returns_message_of_appropriate_length(self):
-        message = [randint(0, 1) for _ in range(0, 2*Codec.H_COLS)]
-        self.assertEqual(8, len(Codec.decode(message)))
+        message = [randint(0, 1) for _ in range(0, 4*Codec.H_COLS)]
+        self.assertEqual(32, len(Codec.decode(message)))
 
     def test_split_into_blocks_if_message_length_is_not_multiple_of_byte_then_raises_exception(self):
         message = [1, 0, 1]
