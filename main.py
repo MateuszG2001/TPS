@@ -1,5 +1,6 @@
 import tkinter as tk
 import tkinter.messagebox
+import tkinter.filedialog
 
 from codec import Codec
 
@@ -93,6 +94,36 @@ def handle_binary_to_encoded_button_click(event):
         encoded_text.insert("1.0", encoded)
 
 
+def handle_decoded_save_button_click(event):
+    filename = tk.filedialog.asksaveasfilename(defaultextension=".txt",
+                                               filetypes=[("Text documents", "*.txt"), ("All files", "*.*")])
+    with open(filename, "w", encoding="utf-16le") as f:
+        f.write(decoded_text.get("1.0", tk.END).replace('\n', ''))
+
+
+def handle_decoded_load_button_click(event):
+    filename = tk.filedialog.askopenfilename(defaultextension=".txt",
+                                             filetypes=[("Text documents", "*.txt"), ("All files", "*.*")])
+    with open(filename, "r", encoding="utf-16le") as f:
+        decoded_text.delete("1.0", tk.END)
+        decoded_text.insert("1.0", f.read())
+
+
+def handle_encoded_save_button_click(event):
+    filename = tk.filedialog.asksaveasfilename(defaultextension=".txt",
+                                               filetypes=[("Text documents", "*.txt"), ("All files", "*.*")], )
+    with open(filename, "w", encoding="utf-16le") as f:
+        f.write(encoded_text.get("1.0", tk.END).replace('\n', ''))
+
+
+def handle_encoded_load_button_click(event):
+    filename = tk.filedialog.askopenfilename(defaultextension=".txt",
+                                             filetypes=[("Text documents", "*.txt"), ("All files", "*.*")])
+    with open(filename, "r", encoding="utf-16le") as f:
+        encoded_text.delete("1.0", tk.END)
+        encoded_text.insert("1.0", f.read())
+
+
 if __name__ == '__main__':
     window = tk.Tk()
     window.title("TPS")
@@ -103,6 +134,14 @@ if __name__ == '__main__':
     decoded_frame = tk.Frame(master=window)
     decoded_label = tk.Label(master=decoded_frame, text="Decoded")
     decoded_label.pack(padx=5, pady=5)
+    decoded_buttons_frame = tk.Frame(master=decoded_frame)
+    decoded_save_button = tk.Button(master=decoded_buttons_frame, text="Save")
+    decoded_save_button.bind("<Button-1>", handle_decoded_save_button_click)
+    decoded_save_button.pack(padx=5, pady=5, side=tk.LEFT)
+    decoded_load_button = tk.Button(master=decoded_buttons_frame, text="Load")
+    decoded_load_button.bind("<Button-1>", handle_decoded_load_button_click)
+    decoded_load_button.pack(padx=5, pady=5, side=tk.RIGHT)
+    decoded_buttons_frame.pack()
     decoded_text = tk.Text(master=decoded_frame, height=16, width=32)
     decoded_text.pack(padx=5, pady=5, fill=tk.BOTH)
     decoded_frame.grid(row=0, column=0, sticky=tk.NSEW)
@@ -135,6 +174,14 @@ if __name__ == '__main__':
     encoded_frame = tk.Frame(master=window)
     encoded_label = tk.Label(master=encoded_frame, text="Encoded")
     encoded_label.pack(padx=5, pady=5)
+    encoded_buttons_frame = tk.Frame(master=encoded_frame)
+    encoded_save_button = tk.Button(master=encoded_buttons_frame, text="Save")
+    encoded_save_button.bind("<Button-1>", handle_encoded_save_button_click)
+    encoded_save_button.pack(padx=5, pady=5, side=tk.LEFT)
+    encoded_load_button = tk.Button(master=encoded_buttons_frame, text="Load")
+    encoded_load_button.bind("<Button-1>", handle_encoded_load_button_click)
+    encoded_load_button.pack(padx=5, pady=5, side=tk.RIGHT)
+    encoded_buttons_frame.pack()
     encoded_text = tk.Text(master=encoded_frame, height=16, width=32)
     encoded_text.pack(padx=5, pady=5, fill=tk.BOTH)
     encoded_frame.grid(row=0, column=2, sticky=tk.NSEW)
